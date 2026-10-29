@@ -1,0 +1,36 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Can you make R150 on a R500 crypto trade? | RealOdds</title>
+<meta name="description" content="We measured how often SOL, DOGE, BTC and gold reached a 30% gain before a stop-loss, at every leverage. The odds were about 50/50 or worse after fees.">
+<link rel="canonical" href="https://realodds.github.io/guides/can-you-make-r150-on-a-r500-trade.html">
+<meta property="og:title" content="Can you make R150 on a R500 crypto trade?">
+<meta property="og:description" content="We measured how often SOL, DOGE, BTC and gold reached a 30% gain before a stop-loss, at every leverage. The odds were about 50/50 or worse after fees.">
+<meta property="og:image" content="https://realodds.github.io/assets/screenshot.jpg">
+<link rel="stylesheet" href="../assets/site.css">
+</head>
+<body>
+<div class="wrap">
+<nav><a class="brand" href="../index.html">Real<span>Odds</span></a><div class="navlinks"><a href="index.html">Guides</a><a href="../app.html">Free app</a></div></nav>
+<article>
+<h1>Can you make R150 on a R500 crypto trade?</h1>
+<p class="meta">Published 29 October 2026 · Based on our own backtests</p>
+<div class="answer">Sometimes, but not reliably. R150 on R500 is a 30% return, which needs 5–20x leverage within a day or a week. In two years of data, the chance of reaching +R150 before losing R150 was about a coin flip, slightly worse after fees.</div>
+<h2>How often +R150 came before -R150 (within 7 days)</h2>
+<p>We entered every 4 hours, long and short, for two years.</p>
+<div class="tw"><table><thead><tr><th>Asset</th><th>Leverage</th><th>Price move needed</th><th>Made R150</th><th>Lost R150</th></tr></thead><tbody><tr><td>SOL</td><td class="nw">10x</td><td class="nw">3.1%</td><td class="nw">48.6%</td><td class="nw">50.9%</td></tr><tr><td>DOGE</td><td class="nw">10x</td><td class="nw">3.1%</td><td class="nw">48.7%</td><td class="nw">50.8%</td></tr><tr><td>BTC</td><td class="nw">10x</td><td class="nw">3.1%</td><td class="nw">45.1%</td><td class="nw">47.3%</td></tr><tr><td>Gold token (PAXG)</td><td class="nw">20x</td><td class="nw">1.6%</td><td class="nw">43.3%</td><td class="nw">47.6%</td></tr></tbody></table></div>
+<h2>Can a wider stop improve the odds?</h2>
+<p>A wider stop wins more often, but each loss gets bigger, so the average stays negative:</p>
+<div class="tw"><table><thead><tr><th>SOL, 7 days</th><th>Made R150</th><th>Lost</th><th>Average per try</th></tr></thead><tbody><tr><td>10x, stop at -R250</td><td class="nw">60.2%</td><td>37.8% (R250 each)</td><td class="nw">about -R4</td></tr><tr><td>10x, no stop (lose R500)</td><td class="nw">69.2%</td><td>21.9% (R500 each)</td><td class="nw">about -R6</td></tr><tr><td>20x, no stop (lose R500)</td><td class="nw">72.7%</td><td>27.1% (R500 each)</td><td class="nw">about -R27</td></tr></tbody></table></div>
+<h2>Does more starting capital help?</h2>
+<p>It helps you survive longer, not win more. We simulated one trade a week for a year, risking R150 per trade on SOL at 10x. Starting with R1,000, 46% of runs ran out of money. Starting with R5,000, almost none did, but only about 39% of runs finished the year ahead.</p>
+<p class="method"><b>How we tested:</b> real Binance price history from 29 Oct 2024 to 29 Oct 2026, R300 per trade, 0.05% fee + 0.02% slippage per side on the full (leveraged) position, 0.01% funding per 8 hours held, and liquidation when a leveraged position is wiped out. Signals act on a closed candle and enter at the next candle's open. Past results do not predict future results.</p>
+<p><a class="btn" href="../app.html?sym=SOLUSDT&tf=1h&strat=price_ema&period=365&run=1">Run a backtest (free)</a></p>
+
+</article>
+<footer>RealOdds is a research and education tool, not financial advice. It does not recommend any trade. Trading with leverage can lose your entire stake.<br><a href="../index.html">RealOdds home</a> · <a href="index.html">All guides</a></footer>
+</div>
+</body>
+</html>

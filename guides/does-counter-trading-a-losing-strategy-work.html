@@ -1,0 +1,34 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Does counter-trading a losing strategy make money? | RealOdds</title>
+<meta name="description" content="If a strategy loses, does doing the opposite win? We reversed 32 losing strategies on SOL and DOGE. 29 still lost, because you pay fees both ways.">
+<link rel="canonical" href="https://realodds.github.io/guides/does-counter-trading-a-losing-strategy-work.html">
+<meta property="og:title" content="Does counter-trading a losing strategy make money?">
+<meta property="og:description" content="If a strategy loses, does doing the opposite win? We reversed 32 losing strategies on SOL and DOGE. 29 still lost, because you pay fees both ways.">
+<meta property="og:image" content="https://realodds.github.io/assets/screenshot.jpg">
+<link rel="stylesheet" href="../assets/site.css">
+</head>
+<body>
+<div class="wrap">
+<nav><a class="brand" href="../index.html">Real<span>Odds</span></a><div class="navlinks"><a href="index.html">Guides</a><a href="../app.html">Free app</a></div></nav>
+<article>
+<h1>Does counter-trading a losing strategy make money?</h1>
+<p class="meta">Published 29 October 2026 · Based on our own backtests</p>
+<div class="answer">Usually not. When we reversed 32 strategies, 29 still lost money. The market part of a trade flips when you reverse it, but the fees don't: you pay them either way.</div>
+<h2>Why reversing doesn't create a winner</h2>
+<p>Every trade's result is the market move plus costs. Most strategies lost because the market part was close to zero and the costs were not. Reverse them, and you get roughly zero minus costs again.</p>
+<div class="tw"><table><thead><tr><th>Strategy (1x, R300, 2 years)</th><th>Before costs</th><th>Costs</th><th>Normal</th><th>Reversed</th></tr></thead><tbody><tr><td>SOL VWAP mean reversion</td><td class="neg nw">-R292</td><td class="nw">R2,151</td><td class="neg nw">-R2,444</td><td class="neg nw">-R1,859</td></tr><tr><td>DOGE VWAP mean reversion</td><td class="neg nw">-R53</td><td class="nw">R2,134</td><td class="neg nw">-R2,187</td><td class="neg nw">-R2,081</td></tr><tr><td>SOL RSI(2) scalp</td><td class="pos nw">+R365</td><td class="nw">R1,305</td><td class="neg nw">-R941</td><td class="neg nw">-R1,669</td></tr><tr><td>SOL opening-range breakout</td><td class="neg nw">-R312</td><td class="nw">R321</td><td class="neg nw">-R633</td><td class="neg nw">-R9</td></tr></tbody></table></div>
+<h2>The three reversals that made money didn't last</h2>
+<div class="tw"><table><thead><tr><th>Reversed strategy</th><th>First year</th><th>Second year</th></tr></thead><tbody><tr><td>DOGE opening-range breakout</td><td class="pos nw">+R144</td><td class="pos nw">+R2</td></tr><tr><td>SOL pullback in trend</td><td class="pos nw">+R130</td><td class="neg nw">-R67</td></tr><tr><td>SOL MA crossover</td><td class="pos nw">+R39</td><td class="neg nw">-R6</td></tr></tbody></table></div>
+<p>With 32 tries, a few positive results are expected by chance. None of them held up in the second year.</p>
+<p class="method"><b>How we tested:</b> real Binance price history from 29 Oct 2024 to 29 Oct 2026, R300 per trade, 0.05% fee + 0.02% slippage per side on the full (leveraged) position, 0.01% funding per 8 hours held, and liquidation when a leveraged position is wiped out. Signals act on a closed candle and enter at the next candle's open. Past results do not predict future results.</p>
+<p><a class="btn" href="../app.html?sym=DOGEUSDT&tf=1h&strat=ema_cross&mode=short&period=365&run=1">Test a short-only version (free)</a></p>
+
+</article>
+<footer>RealOdds is a research and education tool, not financial advice. It does not recommend any trade. Trading with leverage can lose your entire stake.<br><a href="../index.html">RealOdds home</a> · <a href="index.html">All guides</a></footer>
+</div>
+</body>
+</html>

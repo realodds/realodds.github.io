@@ -1,0 +1,37 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Is a 90% win-rate trading bot real? We tested one | RealOdds</title>
+<meta name="description" content="We tested a take-small-profit bot on 2 years of SOL and DOGE data. It hit its target 95-98% of the time and still lost money. Here&#x27;s why.">
+<link rel="canonical" href="https://realodds.github.io/guides/is-a-90-percent-win-rate-trading-bot-real.html">
+<meta property="og:title" content="Is a 90% win-rate trading bot real? We tested one">
+<meta property="og:description" content="We tested a take-small-profit bot on 2 years of SOL and DOGE data. It hit its target 95-98% of the time and still lost money. Here&#x27;s why.">
+<meta property="og:image" content="https://realodds.github.io/assets/screenshot.jpg">
+<link rel="stylesheet" href="../assets/site.css">
+</head>
+<body>
+<div class="wrap">
+<nav><a class="brand" href="../index.html">Real<span>Odds</span></a><div class="navlinks"><a href="index.html">Guides</a><a href="../app.html">Free app</a></div></nav>
+<article>
+<h1>Is a 90% win-rate trading bot real? We tested one</h1>
+<p class="meta">Published 29 October 2026 · Based on our own backtests</p>
+<div class="answer">Yes, a 90%+ win rate is easy to get, and it can still lose money. Our "take R5 profit, then wait for the next reversal" bot hit its target 95–98% of the time without a stop-loss, and lost money in every leveraged test.</div>
+<p>Bots sold with "90% win rate" claims usually work like this: take a small profit quickly and never close a losing trade. Most trades win a little. The few that don't either get liquidated or stay stuck for months.</p>
+<h2>What happened in our test</h2>
+<p>The bot followed the 4-hour trend, bought dips when RSI turned back up (sold rallies in a downtrend), and closed each trade at +R5 after costs on a R300 stake. With no stop-loss:</p>
+<div class="tw"><table><thead><tr><th>Coin</th><th>Leverage</th><th>Hit +R5</th><th>Net over 2 years</th><th>Liquidations</th></tr></thead><tbody><tr><td>SOL</td><td class="nw">1x</td><td class="nw">95.7%</td><td class="neg nw">-R291</td><td class="nw">1</td></tr><tr><td>SOL</td><td class="nw">5x</td><td class="nw">97.2%</td><td class="neg nw">-R1,568</td><td class="nw">12</td></tr><tr><td>DOGE</td><td class="nw">1x</td><td class="nw">95.2%</td><td class="neg nw">-R200</td><td class="nw">0</td></tr><tr><td>DOGE</td><td class="nw">10x</td><td class="nw">95.9%</td><td class="neg nw">-R5,444</td><td class="nw">30</td></tr></tbody></table></div>
+<h2>Why a high win rate isn't enough</h2>
+<p>One liquidation costs the whole R300 stake. That wipes out 60 winning trades of R5. At 1x there are almost no liquidations, but trades get stuck instead: one SOL trade stayed open for more than a year waiting for its R5.</p>
+<p>Adding a stop-loss doesn't fix it. With a R5 stop, only about 44–45% of trades reached +R5 first at 1x, because fees and slippage tilt every trade slightly against you. Across 120 combinations of entry rule, leverage and stop, 119 lost money; the one exception spent its whole second year stuck in a single trade.</p>
+<h2>What to ask any bot seller</h2>
+<ul><li>What is the average loss compared with the average win?</li><li>How many liquidations or stuck trades were there?</li><li>Are fees, slippage and funding included?</li><li>Can I see every trade, not just screenshots of winners?</li></ul>
+<p class="method"><b>How we tested:</b> real Binance price history from 29 Oct 2024 to 29 Oct 2026, R300 per trade, 0.05% fee + 0.02% slippage per side on the full (leveraged) position, 0.01% funding per 8 hours held, and liquidation when a leveraged position is wiped out. Signals act on a closed candle and enter at the next candle's open. Past results do not predict future results.</p>
+<p><a class="btn" href="../app.html?sym=SOLUSDT&tf=1h&strat=rsi_rev&period=365&run=1">Test a strategy yourself (free)</a></p>
+
+</article>
+<footer>RealOdds is a research and education tool, not financial advice. It does not recommend any trade. Trading with leverage can lose your entire stake.<br><a href="../index.html">RealOdds home</a> · <a href="index.html">All guides</a></footer>
+</div>
+</body>
+</html>

@@ -1,0 +1,35 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Do crypto day-trading strategies work after fees? | RealOdds</title>
+<meta name="description" content="We backtested 8 popular day-trading strategies on 15-minute SOL and DOGE data. All 16 tests lost money after fees, though 10 were profitable before costs.">
+<link rel="canonical" href="https://realodds.github.io/guides/do-crypto-day-trading-strategies-work-after-fees.html">
+<meta property="og:title" content="Do crypto day-trading strategies work after fees?">
+<meta property="og:description" content="We backtested 8 popular day-trading strategies on 15-minute SOL and DOGE data. All 16 tests lost money after fees, though 10 were profitable before costs.">
+<meta property="og:image" content="https://realodds.github.io/assets/screenshot.jpg">
+<link rel="stylesheet" href="../assets/site.css">
+</head>
+<body>
+<div class="wrap">
+<nav><a class="brand" href="../index.html">Real<span>Odds</span></a><div class="navlinks"><a href="index.html">Guides</a><a href="../app.html">Free app</a></div></nav>
+<article>
+<h1>Do crypto day-trading strategies work after fees?</h1>
+<p class="meta">Published 29 October 2026 · Based on our own backtests</p>
+<div class="answer">Not in our test. All 8 popular day-trading strategies lost money on both SOL and DOGE over two years after fees. Ten of the 16 tests were profitable <i>before</i> costs, and fees turned every one into a loss.</div>
+<h2>Results: R300 per trade, no leverage, all trades closed by end of day</h2>
+<div class="tw"><table><thead><tr><th>Strategy</th><th>SOL net</th><th>DOGE net</th><th>Trades per day</th></tr></thead><tbody><tr><td>Opening-range breakout (first hour)</td><td class="neg nw">-R633</td><td class="neg nw">-R790</td><td class="nw">1</td></tr><tr><td>Asian-range breakout at London open</td><td class="neg nw">-R256</td><td class="neg nw">-R136</td><td class="nw">0.85</td></tr><tr><td>Previous-day high/low breakout</td><td class="neg nw">-R384</td><td class="neg nw">-R155</td><td class="nw">0.8</td></tr><tr><td>VWAP trend pullback</td><td class="neg nw">-R360</td><td class="neg nw">-R136</td><td class="nw">1.8</td></tr><tr><td>VWAP mean reversion</td><td class="neg nw">-R2,444</td><td class="neg nw">-R2,187</td><td class="nw">7</td></tr><tr><td>EMA 9/21 crossover scalp</td><td class="neg nw">-R757</td><td class="neg nw">-R1,051</td><td class="nw">2.8</td></tr><tr><td>RSI(2) extreme scalp</td><td class="neg nw">-R941</td><td class="neg nw">-R975</td><td class="nw">4</td></tr><tr><td>Intraday momentum (first 30 min to last 30 min)</td><td class="neg nw">-R257</td><td class="neg nw">-R269</td><td class="nw">1</td></tr></tbody></table></div>
+<h2>Costs decide the result</h2>
+<p>The more a strategy trades, the more it pays. The RSI(2) scalp on SOL made +R365 before costs and paid R1,305 in fees and slippage, ending at -R941. It won 51% of its trades and still lost, because its average loss (R1.49) was bigger than its average win (R0.86).</p>
+<p>With 5x leverage every loss above grows about five times; at 10x, VWAP mean reversion on SOL lost R24,436 over the two years on R300 trades.</p>
+<h2>Could cheaper fees save them?</h2>
+<p>We re-ran the tests at 0.02% "maker" fees with no slippage. Only the VWAP trend pullback stayed positive in both years on both coins (+R36 on SOL, +R260 on DOGE over two years), and almost all of that came in the first year. Stop-losses usually fill at the higher market-order fee, so even that is optimistic.</p>
+<p class="method"><b>How we tested:</b> real Binance price history from 29 Oct 2024 to 29 Oct 2026, R300 per trade, 0.05% fee + 0.02% slippage per side on the full (leveraged) position, 0.01% funding per 8 hours held, and liquidation when a leveraged position is wiped out. Signals act on a closed candle and enter at the next candle's open. Past results do not predict future results.</p>
+<p><a class="btn" href="../app.html?sym=SOLUSDT&tf=1h&strat=ema_cross&period=365&run=1">Check a strategy with real fees (free)</a></p>
+
+</article>
+<footer>RealOdds is a research and education tool, not financial advice. It does not recommend any trade. Trading with leverage can lose your entire stake.<br><a href="../index.html">RealOdds home</a> · <a href="index.html">All guides</a></footer>
+</div>
+</body>
+</html>
