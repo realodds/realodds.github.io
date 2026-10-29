@@ -1,0 +1,504 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>RealOdds Backtester</title>
+<meta name="description" content="Test crypto trading strategies on real market data with real fees, leverage and liquidation. No profit claims — just your actual odds.">
+<style>
+:root{
+  --bg:#f6f7f9; --panel:#ffffff; --ink:#14181f; --muted:#5b6472; --line:#e3e6eb;
+  --accent:#2f5bd3; --accent-ink:#ffffff; --good:#137a4b; --bad:#b42318; --warn-bg:#fff7e6; --warn-ink:#7a4a00;
+  --chip:#eef1f6; --shadow:0 1px 2px rgba(16,24,40,.06),0 1px 3px rgba(16,24,40,.08);
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#0f1217; --panel:#171b22; --ink:#e8ebf0; --muted:#9aa3b2; --line:#2a303a;
+    --accent:#6d8fff; --accent-ink:#0b0e13; --good:#3ccf8e; --bad:#ff6b5e; --warn-bg:#2b2412; --warn-ink:#f3cf7a;
+    --chip:#222833; --shadow:none;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#0f1217; --panel:#171b22; --ink:#e8ebf0; --muted:#9aa3b2; --line:#2a303a;
+  --accent:#6d8fff; --accent-ink:#0b0e13; --good:#3ccf8e; --bad:#ff6b5e; --warn-bg:#2b2412; --warn-ink:#f3cf7a;
+  --chip:#222833; --shadow:none;
+}
+*{box-sizing:border-box}
+html,body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.5 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
+a{color:var(--accent)}
+header{background:var(--panel);border-bottom:1px solid var(--line)}
+.wrap{max-width:1180px;margin:0 auto;padding:0 16px}
+.top{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:14px 0;flex-wrap:wrap}
+.brand{font-weight:700;font-size:18px;letter-spacing:-.01em}
+.brand small{font-weight:500;color:var(--muted);font-size:13px;margin-left:6px}
+.badge{display:inline-block;padding:2px 8px;border-radius:999px;background:var(--chip);color:var(--muted);font-size:12px;font-weight:600}
+.badge.pro{background:var(--accent);color:var(--accent-ink)}
+.notice{background:var(--warn-bg);color:var(--warn-ink);border-radius:10px;padding:10px 14px;margin:16px 0;font-size:14px}
+.grid{display:grid;grid-template-columns:330px 1fr;gap:16px;margin:16px 0 40px}
+@media (max-width:900px){.grid{grid-template-columns:1fr}}
+.panel{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:16px;box-shadow:var(--shadow);min-width:0}
+.panel h2{font-size:15px;margin:0 0 12px}
+.panel h3{font-size:14px;margin:18px 0 8px;color:var(--muted);font-weight:600}
+label{display:block;font-size:13px;color:var(--muted);margin:10px 0 4px}
+select,input{width:100%;padding:8px 10px;border:1px solid var(--line);border-radius:8px;background:var(--bg);color:var(--ink);font:inherit}
+.row2{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+button{font:inherit;border:0;border-radius:9px;padding:10px 14px;cursor:pointer;font-weight:600}
+.btn{background:var(--accent);color:var(--accent-ink);width:100%;margin-top:14px}
+.btn2{background:var(--chip);color:var(--ink)}
+button:disabled{opacity:.55;cursor:not-allowed}
+.tabs{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:12px}
+.tab{background:var(--chip);color:var(--ink);padding:8px 12px}
+.tab.on{background:var(--accent);color:var(--accent-ink)}
+.cards{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:10px}
+.card{border:1px solid var(--line);border-radius:10px;padding:10px 12px}
+.card .k{font-size:12px;color:var(--muted)}
+.card .v{font-size:19px;font-weight:700;font-variant-numeric:tabular-nums}
+.pos{color:var(--good)} .neg{color:var(--bad)}
+.tbl{width:100%;border-collapse:collapse;font-size:13px;font-variant-numeric:tabular-nums}
+.tbl th,.tbl td{padding:6px 8px;border-bottom:1px solid var(--line);text-align:right;white-space:nowrap}
+.tbl th:first-child,.tbl td:first-child{text-align:left}
+.tbl th{color:var(--muted);font-weight:600;position:sticky;top:0;background:var(--panel)}
+.scroll{overflow:auto;max-height:420px;border:1px solid var(--line);border-radius:10px}
+canvas{width:100%;height:240px;display:block}
+.muted{color:var(--muted);font-size:13px}
+.progress{height:6px;background:var(--chip);border-radius:9px;overflow:hidden;margin-top:10px;display:none}
+.progress div{height:100%;width:0;background:var(--accent);transition:width .2s}
+.lock{border:1px dashed var(--line);border-radius:10px;padding:16px;text-align:center;color:var(--muted)}
+.hidden{display:none}
+.verdict{border-radius:10px;padding:12px 14px;margin:12px 0;font-weight:600}
+.verdict.bad{background:color-mix(in srgb,var(--bad) 12%,transparent);color:var(--bad)}
+.verdict.good{background:color-mix(in srgb,var(--good) 12%,transparent);color:var(--good)}
+.verdict.mid{background:var(--warn-bg);color:var(--warn-ink)}
+footer{color:var(--muted);font-size:12px;padding:0 0 30px}
+.aff{margin-top:20px;border-top:1px solid var(--line);padding-top:4px}
+.afflinks{display:flex;gap:8px;flex-wrap:wrap;margin:8px 0}
+.afflinks a{background:var(--chip);color:var(--ink);text-decoration:none;font-weight:600;padding:8px 14px;border-radius:9px}
+.small{font-size:12px}
+</style>
+</head>
+<body>
+<header><div class="wrap top">
+  <div class="brand">RealOdds <small>Backtester</small> <span id="edition" class="badge">FREE</span></div>
+  <div class="muted">Real data · real fees · no profit claims</div>
+</div></header>
+
+<div class="wrap">
+<div class="notice"><b>Honest tool, honest results.</b> This tests strategies on past Binance prices including fees, slippage, funding and liquidation. Past results do not predict future results. Nothing here is financial advice.</div>
+
+<div class="grid">
+<!-- ===================== SETTINGS ===================== -->
+<div class="panel">
+  <h2>Settings</h2>
+  <label for="sym">Coin (Binance USDT pair)</label>
+  <select id="sym"></select>
+  <div id="symCustomWrap" class="hidden"><label for="symCustom">Custom pair</label><input id="symCustom" placeholder="e.g. AVAXUSDT"></div>
+  <div class="row2">
+    <div><label for="tf">Candle size</label><select id="tf"></select></div>
+    <div><label for="period">History</label><select id="period"></select></div>
+  </div>
+  <label for="strat">Strategy</label>
+  <select id="strat"></select>
+  <div id="params"></div>
+  <label for="mode">Direction</label>
+  <select id="mode"><option value="both">Long + short</option><option value="long">Long only</option><option value="short">Short only</option></select>
+
+  <h3>Money</h3>
+  <div class="row2">
+    <div><label for="cur">Currency</label><select id="cur"><option value="R">Rand (R)</option><option value="$">Dollar ($)</option></select></div>
+    <div><label for="stake">Stake per trade</label><input id="stake" type="number" min="1" value="300"></div>
+  </div>
+  <label for="lev">Leverage</label>
+  <select id="lev"></select>
+
+  <h3>Exits</h3>
+  <div class="row2">
+    <div><label for="sl">Stop-loss (× ATR, 0 = off)</label><input id="sl" type="number" step="0.1" min="0" value="0"></div>
+    <div><label for="tp">Take-profit (× ATR, 0 = off)</label><input id="tp" type="number" step="0.1" min="0" value="0"></div>
+  </div>
+  <label for="hold">Max hold (candles, 0 = off)</label><input id="hold" type="number" min="0" value="0">
+
+  <h3>Costs (per side, % of position)</h3>
+  <div class="row2">
+    <div><label for="fee">Fee %</label><input id="fee" type="number" step="0.01" min="0" value="0.05"></div>
+    <div><label for="slip">Slippage %</label><input id="slip" type="number" step="0.01" min="0" value="0.02"></div>
+  </div>
+  <label for="fund">Funding % per 8h held (cost)</label><input id="fund" type="number" step="0.005" min="0" value="0.01">
+
+  <button id="run" class="btn">Run backtest</button>
+  <div class="progress" id="prog"><div></div></div>
+  <p class="muted" id="status"></p>
+</div>
+
+<!-- ===================== RESULTS ===================== -->
+<div class="panel">
+  <div class="tabs">
+    <button class="tab on" data-tab="res">Results</button>
+    <button class="tab" data-tab="dw">Daily &amp; weekly</button>
+    <button class="tab" data-tab="trades">Trade log</button>
+    <button class="tab" data-tab="search">Strategy search <span class="badge pro">PRO</span></button>
+    <button class="tab" data-tab="odds">Target odds <span class="badge pro">PRO</span></button>
+  </div>
+
+  <section id="tab-res">
+    <p class="muted" id="empty">Choose settings and press <b>Run backtest</b>. Data downloads straight from Binance's public API in your browser.</p>
+    <div id="resBody" class="hidden">
+      <div id="verdict" class="verdict"></div>
+      <div class="cards" id="cards"></div>
+      <h3>Equity curve (cumulative profit/loss)</h3>
+      <canvas id="eq"></canvas>
+      <h3>Is it consistent? First half vs second half</h3>
+      <div class="cards" id="halves"></div>
+      <p class="muted" id="bh"></p>
+      
+    </div>
+  </section>
+
+  <section id="tab-dw" class="hidden"><div id="dwBody" class="muted">Run a backtest first.</div></section>
+
+  <section id="tab-trades" class="hidden">
+    <div class="tabs"><button id="csv" class="btn2">Download CSV</button></div>
+    <div class="scroll"><table class="tbl" id="tradeTbl"></table></div>
+  </section>
+
+  <section id="tab-search" class="hidden">
+    <div id="searchLock" class="lock">Strategy search is a Pro feature. It tests every strategy and direction on your coin, ranks them, and flags which held up in both halves of the data.</div>
+    <div id="searchBody" class="hidden">
+      <p class="muted">Uses your coin, candle size, history, leverage, stake and costs. Each strategy uses its default settings. When many strategies are tested, the best one is partly luck — check the "both halves" column.</p>
+      <button id="runSearch" class="btn2">Run strategy search</button>
+      <div class="scroll" style="margin-top:12px"><table class="tbl" id="searchTbl"></table></div>
+    </div>
+  </section>
+
+  <section id="tab-odds" class="hidden">
+    <div id="oddsLock" class="lock">Target odds is a Pro feature. Enter a profit goal and a risk amount and see how often the market actually reached it first.</div>
+    <div id="oddsBody" class="hidden">
+      <p class="muted">Checks every possible entry (every candle, long and short) in the loaded data: did price reach your goal before your stop?</p>
+      <div class="row2">
+        <div><label for="oGoal">Profit goal</label><input id="oGoal" type="number" value="150"></div>
+        <div><label for="oStake">Stake</label><input id="oStake" type="number" value="500"></div>
+      </div>
+      <div class="row2">
+        <div><label for="oRisk">Max loss (0 = no stop, liquidation)</label><input id="oRisk" type="number" value="150"></div>
+        <div><label for="oHz">Time limit (hours)</label><input id="oHz" type="number" value="168"></div>
+      </div>
+      <button id="runOdds" class="btn2" style="margin-top:12px">Calculate odds</button>
+      <div class="scroll" style="margin-top:12px"><table class="tbl" id="oddsTbl"></table></div>
+      <p class="muted" id="oddsNote"></p>
+    </div>
+  </section>
+</div>
+</div>
+<footer>Data: Binance public spot market data (data-api.binance.vision). Futures prices and funding differ slightly from these estimates. RealOdds is a research tool, not financial advice; trading with leverage can lose your entire stake.</footer>
+</div>
+
+<script>
+const PRO = /*__PRO__*/false;
+const FREE_SYMS = ["SOLUSDT","BTCUSDT","ETHUSDT","DOGEUSDT"];
+const PRO_SYMS = ["SOLUSDT","BTCUSDT","ETHUSDT","DOGEUSDT","XRPUSDT","BNBUSDT","ADAUSDT","AVAXUSDT","LINKUSDT","PAXGUSDT","CUSTOM"];
+const TFS = {"15m":0.25,"1h":1,"4h":4,"1d":24};
+const PERIODS = PRO ? [["90","3 months"],["180","6 months"],["365","1 year"],["730","2 years"],["1095","3 years"]] : [["90","3 months"],["180","6 months"],["365","1 year"]];
+const LEVS = PRO ? [1,2,3,5,10,20,50] : [1,2,3];
+const $ = id => document.getElementById(id);
+const fmtN = (x,d=2) => (x<0?"-":"") + Math.abs(x).toLocaleString("en-ZA",{minimumFractionDigits:d,maximumFractionDigits:d});
+const money = x => { const c=$("cur").value; return (x<0?"-":"")+c+Math.abs(x).toLocaleString("en-ZA",{minimumFractionDigits:2,maximumFractionDigits:2}); };
+const cls = x => x>0?"pos":(x<0?"neg":"");
+
+/* ---------- indicators ---------- */
+function ema(a,n){const k=2/(n+1),o=new Array(a.length);let p=a[0];for(let i=0;i<a.length;i++){p=i?a[i]*k+p*(1-k):a[i];o[i]=p}return o}
+function sma(a,n){const o=new Array(a.length).fill(NaN);let s=0;for(let i=0;i<a.length;i++){s+=a[i];if(i>=n)s-=a[i-n];if(i>=n-1)o[i]=s/n}return o}
+function stdev(a,n){const m=sma(a,n),o=new Array(a.length).fill(NaN);for(let i=n-1;i<a.length;i++){let s=0;for(let j=i-n+1;j<=i;j++)s+=(a[j]-m[i])**2;o[i]=Math.sqrt(s/(n-1))}return o}
+function rsi(c,n){const o=new Array(c.length).fill(NaN);let up=0,dn=0;for(let i=1;i<c.length;i++){const d=c[i]-c[i-1],u=Math.max(d,0),w=Math.max(-d,0);if(i===1){up=u;dn=w}else{up=up+(u-up)/n;dn=dn+(w-dn)/n}o[i]=dn===0?100:100-100/(1+up/dn)}return o}
+function atr(b,n=14){const o=new Array(b.c.length);let p=b.h[0]-b.l[0];for(let i=0;i<b.c.length;i++){const tr=i?Math.max(b.h[i]-b.l[i],Math.abs(b.h[i]-b.c[i-1]),Math.abs(b.l[i]-b.c[i-1])):b.h[i]-b.l[i];p=i?p+(tr-p)/n:tr;o[i]=p}return o}
+function rollMaxPrev(a,n){const o=new Array(a.length).fill(NaN);for(let i=n;i<a.length;i++){let m=-Infinity;for(let j=i-n;j<i;j++)m=Math.max(m,a[j]);o[i]=m}return o}
+function rollMinPrev(a,n){const o=new Array(a.length).fill(NaN);for(let i=n;i<a.length;i++){let m=Infinity;for(let j=i-n;j<i;j++)m=Math.min(m,a[j]);o[i]=m}return o}
+const crossUp=(a,b,i)=>i>0&&a[i]>b[i]&&a[i-1]<=b[i-1];
+const crossDn=(a,b,i)=>i>0&&a[i]<b[i]&&a[i-1]>=b[i-1];
+
+/* ---------- strategies ----------
+   each returns arrays of booleans: el (enter long), xl (exit long), es (enter short), xs (exit short)
+   stops: default stop/target/hold suggested for the strategy */
+const STRATS = {
+  price_ema:{name:"Trend: price vs EMA",free:true,params:[["n","EMA length",100]],stops:[0,0,0],
+    fn:(b,p)=>{const e=ema(b.c,p.n),u=b.c.map((c,i)=>c>e[i]);return{el:u,xl:u.map(x=>!x),es:u.map(x=>!x),xs:u}}},
+  ema_cross:{name:"Trend: EMA crossover",free:true,params:[["f","Fast EMA",20],["s","Slow EMA",100]],stops:[0,0,0],
+    fn:(b,p)=>{const f=ema(b.c,p.f),s=ema(b.c,p.s),u=f.map((x,i)=>x>s[i]);return{el:u,xl:u.map(x=>!x),es:u.map(x=>!x),xs:u}}},
+  donchian:{name:"Trend: Donchian breakout",free:false,params:[["n","Entry lookback",20],["m","Exit lookback",10]],stops:[0,0,0],
+    fn:(b,p)=>{const hh=rollMaxPrev(b.h,p.n),ll=rollMinPrev(b.l,p.n),xh=rollMaxPrev(b.h,p.m),xlo=rollMinPrev(b.l,p.m);
+      return{el:b.c.map((c,i)=>c>hh[i]),xl:b.c.map((c,i)=>c<xlo[i]),es:b.c.map((c,i)=>c<ll[i]),xs:b.c.map((c,i)=>c>xh[i])}}},
+  rsi_rev:{name:"Reversion: RSI extremes",free:true,params:[["n","RSI length",14],["lo","Oversold below",30]],stops:[0,0,0],
+    fn:(b,p)=>{const r=rsi(b.c,p.n);return{el:r.map(x=>x<p.lo),xl:r.map(x=>x>50),es:r.map(x=>x>100-p.lo),xs:r.map(x=>x<50)}}},
+  boll_rev:{name:"Reversion: Bollinger bands",free:false,params:[["n","Length",20],["k","Std devs",2]],stops:[0,0,0],
+    fn:(b,p)=>{const m=sma(b.c,p.n),s=stdev(b.c,p.n);return{el:b.c.map((c,i)=>c<m[i]-p.k*s[i]),xl:b.c.map((c,i)=>c>m[i]),es:b.c.map((c,i)=>c>m[i]+p.k*s[i]),xs:b.c.map((c,i)=>c<m[i])}}},
+  breakout:{name:"Breakout + volume",free:false,params:[["n","Lookback",20],["v","Volume × avg",1.5]],stops:[1.5,3,48],
+    fn:(b,p)=>{const hh=rollMaxPrev(b.h,p.n),ll=rollMinPrev(b.l,p.n);const avg=sma(b.v,p.n);
+      const vol=b.v.map((v,i)=>i>0&&v>p.v*avg[i-1]);const F=b.c.map(()=>false);
+      return{el:b.c.map((c,i)=>c>hh[i]&&vol[i]),xl:F,es:b.c.map((c,i)=>c<ll[i]&&vol[i]),xs:F}}},
+  macd_rsi:{name:"MACD + RSI",free:false,params:[],stops:[1.5,3,48],
+    fn:(b)=>{const e26=ema(b.c,26),e12=ema(b.c,12),mm=e12.map((x,i)=>x-e26[i]),sg=ema(mm,9),r=rsi(b.c,14),F=b.c.map(()=>false);
+      return{el:b.c.map((_,i)=>crossUp(mm,sg,i)&&mm[i]>0&&r[i]>50),xl:F,es:b.c.map((_,i)=>crossDn(mm,sg,i)&&mm[i]<0&&r[i]<50),xs:F}}},
+  pullback:{name:"Pullback in trend",free:false,params:[],stops:[1.5,3,48],
+    fn:(b)=>{const e20=ema(b.c,20),e50=ema(b.c,50),e200=ema(b.c,200),r=rsi(b.c,14),F=b.c.map(()=>false);
+      return{el:b.c.map((c,i)=>e50[i]>e200[i]&&c>e50[i]&&b.l[i]<=e20[i]&&c>e20[i]&&r[i]>=40&&r[i]<=55&&r[i]>r[i-1]),xl:F,
+             es:b.c.map((c,i)=>e50[i]<e200[i]&&c<e50[i]&&b.h[i]>=e20[i]&&c<e20[i]&&r[i]>=45&&r[i]<=60&&r[i]<r[i-1]),xs:F}}},
+  scalp_cross:{name:"Scalp: EMA 9/21 cross",free:false,params:[],stops:[1.5,3,0],
+    fn:(b)=>{const a=ema(b.c,9),c2=ema(b.c,21),r=rsi(b.c,14),F=b.c.map(()=>false);
+      return{el:b.c.map((_,i)=>crossUp(a,c2,i)&&r[i]>50),xl:F,es:b.c.map((_,i)=>crossDn(a,c2,i)&&r[i]<50),xs:F}}},
+  rsi2:{name:"Scalp: RSI(2) extremes",free:false,params:[],stops:[2,0,0],
+    fn:(b)=>{const r=rsi(b.c,2),e=ema(b.c,200);return{el:b.c.map((c,i)=>c>e[i]&&r[i]<10),xl:r.map(x=>x>50),es:b.c.map((c,i)=>c<e[i]&&r[i]>90),xs:r.map(x=>x<50)}}},
+};
+
+/* ---------- data ---------- */
+const cache = {};
+async function loadBars(sym,tf,days,onProg){
+  const key=sym+tf+days; if(cache[key]) return cache[key];
+  const step={"15m":9e5,"1h":36e5,"4h":144e5,"1d":864e5}[tf];
+  const end=Math.floor(Date.now()/step)*step, start=end-days*864e5-200*step;   // +200 candles so indicators are warmed up before the test period
+  const rows=[]; let cur=start;
+  while(cur<end){
+    const url=`https://data-api.binance.vision/api/v3/klines?symbol=${sym}&interval=${tf}&startTime=${cur}&limit=1000`;
+    const r=await fetch(url); if(!r.ok) throw new Error(r.status===400?`Binance doesn't list ${sym}`:`Binance returned ${r.status}`);
+    const k=await r.json(); if(!k.length) break;
+    for(const x of k) if(x[0]<end) rows.push(x);
+    cur=k[k.length-1][0]+step; onProg&&onProg(Math.min(1,(cur-start)/(end-start)));
+  }
+  if(rows.length<300) throw new Error("Not enough history for this pair/period");
+  const b={t:[],o:[],h:[],l:[],c:[],v:[]};
+  for(const x of rows){b.t.push(x[0]);b.o.push(+x[1]);b.h.push(+x[2]);b.l.push(+x[3]);b.c.push(+x[4]);b.v.push(+x[5])}
+  b.atr=atr(b); cache[key]=b; return b;
+}
+
+/* ---------- engine ----------
+   signal on candle close -> entry next candle open. Stop/target checked inside candles (stop first if both).
+   Strategy exit on close -> exit next open. Liquidation when adverse move >= 1/lev - 0.5%. */
+function backtest(b,sig,o){
+  const n=b.c.length, hpb=o.hpb, trades=[], barPnl=new Float64Array(n);
+  const useL=o.mode!=="short", useS=o.mode!=="long", liq=1/o.lev-0.005, costSide=o.fee+o.slip;
+  let i=200;
+  while(i<n-1){
+    const s = (useL&&sig.el[i])?1:((useS&&sig.es[i])?-1:0);
+    if(!s||isNaN(b.atr[i])){i++;continue}
+    const e=i+1, px=b.o[e], a=b.atr[i];
+    const sl=o.sl>0?px-s*o.sl*a:null, tp=o.tp>0?px+s*o.tp*a:null, lq=px*(1-s*liq);
+    let xp=null, why="", x=e, j=e;
+    for(j=e;j<n;j++){
+      const adv=s>0?b.l[j]:b.h[j], fav=s>0?b.h[j]:b.l[j];
+      const lqHit=s>0?adv<=lq:adv>=lq, slHit=sl!==null&&(s>0?adv<=sl:adv>=sl);
+      if(lqHit&&(sl===null||(s>0?lq>=sl:lq<=sl))){xp=lq;why="LIQUIDATED";x=j;break}
+      if(slHit){xp=sl;why="stop-loss";x=j;break}
+      if(tp!==null&&(s>0?fav>=tp:fav<=tp)){xp=tp;why="take-profit";x=j;break}
+      const ex=s>0?sig.xl[j]:sig.xs[j], held=j-e+1;
+      if(j+1<n&&(ex||(o.hold>0&&held>=o.hold))){xp=b.o[j+1];why=ex?"exit signal":"time limit";x=j+1;break}
+    }
+    if(xp===null){x=n-1;xp=b.c[n-1];why="end of data"}
+    const hours=(x-e+(why==="exit signal"||why==="time limit"?0:1))*hpb;
+    const move=s*(xp/px-1), cost=2*costSide+o.fund*hours/8;
+    let pct = why==="LIQUIDATED"?-1:Math.max(o.lev*(move-cost),-1);
+    const pnl=pct*o.stake;
+    // mark-to-market per candle for daily/weekly stats
+    let prev=px, acc=0;
+    for(let k=e;k<x;k++){const d=s*(b.c[k]-prev)/px*o.lev*o.stake;barPnl[k]+=d;acc+=d;prev=b.c[k]}
+    barPnl[x]+=pnl-acc;
+    trades.push({entryT:b.t[e],exitT:b.t[x],side:s>0?"LONG":"SHORT",entry:px,exit:xp,why,hours,pnl,cost:o.lev*cost*o.stake});
+    i = (why==="exit signal"||why==="time limit") ? x-1 : x;   // allow re-entry on the exit candle's signal
+    if(i<e) i=e;
+  }
+  return {trades,barPnl};
+}
+
+function stats(tr,b){
+  const n=tr.length; if(!n) return null;
+  const w=tr.filter(t=>t.pnl>0), l=tr.filter(t=>t.pnl<=0);
+  let eq=0,peak=0,dd=0,run=0,maxRun=0;
+  for(const t of tr){eq+=t.pnl;peak=Math.max(peak,eq);dd=Math.min(dd,eq-peak);run=t.pnl<=0?run+1:0;maxRun=Math.max(maxRun,run)}
+  const mid=b.t[200]+(b.t[b.t.length-1]-b.t[200])/2;
+  const sum=a=>a.reduce((s,t)=>s+t.pnl,0), gw=sum(w), gl=-sum(l);
+  const top=tr.map(t=>t.pnl).sort((a,b)=>b-a), top3=top.slice(0,3).reduce((s,x)=>s+x,0);
+  return {n,net:eq,best:top[0],top3,exTop3:eq-top3,win:100*w.length/n,avgW:w.length?gw/w.length:0,avgL:l.length?-gl/l.length:0,pf:gl>0?gw/gl:Infinity,
+    dd,maxRun,liq:tr.filter(t=>t.why==="LIQUIDATED").length,costs:tr.reduce((s,t)=>s+t.cost,0),
+    h1:sum(tr.filter(t=>t.entryT<mid)),h2:sum(tr.filter(t=>t.entryT>=mid)),mid};
+}
+
+function periodStats(b,barPnl,kind){
+  const m=new Map();
+  for(let i=0;i<b.t.length;i++){
+    const d=new Date(b.t[i]); let key;
+    if(kind==="d") key=d.toISOString().slice(0,10);
+    else {const day=(d.getUTCDay()+6)%7; const mon=new Date(Date.UTC(d.getUTCFullYear(),d.getUTCMonth(),d.getUTCDate()-day)); key=mon.toISOString().slice(0,10)}
+    m.set(key,(m.get(key)||0)+barPnl[i]);
+  }
+  const keys=[...m.keys()], v=[...m.values()];
+  let run=0,maxRun=0; for(const x of v){run=x<0?run+1:0;maxRun=Math.max(maxRun,run)}
+  const sorted=[...v].sort((a,b)=>a-b);
+  return {count:v.length,avg:v.reduce((a,c)=>a+c,0)/v.length,median:sorted[Math.floor(v.length/2)],win:100*v.filter(x=>x>0).length/v.length,
+    best:Math.max(...v),worst:Math.min(...v),maxRun,keys,v};
+}
+
+/* ---------- UI ---------- */
+function fill(sel,opts){sel.innerHTML=opts.map(([v,t])=>`<option value="${v}">${t}</option>`).join("")}
+function initUI(){
+  $("edition").textContent=PRO?"PRO":"FREE"; if(PRO) $("edition").classList.add("pro");
+  fill($("sym"),(PRO?PRO_SYMS:FREE_SYMS).map(s=>[s,s==="CUSTOM"?"Other (type it)…":s.replace("USDT","")+" / USDT"+(s==="PAXGUSDT"?" (gold token)":"")]));
+  fill($("tf"),Object.keys(TFS).map(k=>[k,k]).filter(([k])=>PRO||k!=="15m")); $("tf").value="4h";
+  fill($("period"),PERIODS); $("period").value=PRO?"730":"365";
+  fill($("strat"),Object.entries(STRATS).map(([k,s])=>[k,s.name+(!PRO&&!s.free?" (Pro)":"")]));
+  [...$("strat").options].forEach(op=>{if(!PRO&&!STRATS[op.value].free) op.disabled=true});
+  fill($("lev"),LEVS.map(l=>[l,l+"x"+(l===1?" (no leverage)":"")]));
+  if(PRO){$("searchLock").classList.add("hidden");$("searchBody").classList.remove("hidden");$("oddsLock").classList.add("hidden");$("oddsBody").classList.remove("hidden")}
+  $("sym").onchange=()=>$("symCustomWrap").classList.toggle("hidden",$("sym").value!=="CUSTOM");
+  $("strat").onchange=renderParams; renderParams();
+  document.querySelectorAll(".tab[data-tab]").forEach(t=>t.onclick=()=>{
+    document.querySelectorAll(".tab[data-tab]").forEach(x=>x.classList.toggle("on",x===t));
+    ["res","dw","trades","search","odds"].forEach(k=>$("tab-"+k).classList.toggle("hidden",k!==t.dataset.tab));
+  });
+  $("run").onclick=run; $("csv").onclick=downloadCSV;
+  if(PRO){$("runSearch").onclick=runSearch;$("runOdds").onclick=runOdds}
+  try{const s=JSON.parse(localStorage.getItem("realodds")||"{}");for(const[k,v]of Object.entries(s)){if($(k)&&k!=="params")$(k).value=v}renderParams()}catch(e){}
+  // presets from guide links, e.g. app.html?sym=SOLUSDT&tf=4h&strat=price_ema&period=365&lev=1&run=1
+  const q=new URLSearchParams(location.search), setOpt=(id,v)=>{const el=$(id);if(v&&el&&[...el.options].some(o=>o.value===v&&!o.disabled))el.value=v};
+  setOpt("sym",q.get("sym"));setOpt("tf",q.get("tf"));setOpt("period",q.get("period"));setOpt("mode",q.get("mode"));setOpt("lev",q.get("lev"));
+  if(q.get("strat")){setOpt("strat",q.get("strat"));renderParams()}
+  if(q.get("stake")&&+q.get("stake")>0)$("stake").value=+q.get("stake");
+  if(q.get("run")==="1")setTimeout(run,0);
+  if(!PRO) $("csv").disabled=true, $("csv").textContent="Download CSV (Pro)";
+}
+function renderParams(){
+  const s=STRATS[$("strat").value];
+  $("params").innerHTML=s.params.length?'<div class="row2">'+s.params.map(([k,l,d])=>`<div><label for="p_${k}">${l}</label><input id="p_${k}" type="number" step="any" value="${d}"></div>`).join("")+"</div>":"";
+  [$("sl").value,$("tp").value,$("hold").value]=s.stops;
+}
+function opts(){
+  const tf=$("tf").value;
+  return {mode:$("mode").value,lev:+$("lev").value,stake:+$("stake").value||300,fee:+$("fee").value/100,slip:+$("slip").value/100,
+          fund:+$("fund").value/100,sl:+$("sl").value,tp:+$("tp").value,hold:+$("hold").value,hpb:TFS[tf]};
+}
+function sym(){return $("sym").value==="CUSTOM"?($("symCustom").value||"").trim().toUpperCase():$("sym").value}
+function setProg(p){const el=$("prog");el.style.display=p===null?"none":"block";el.firstElementChild.style.width=(100*(p||0))+"%"}
+let last=null;
+
+async function getData(){
+  const s=sym(); if(!/^[A-Z0-9]{4,20}$/.test(s)) throw new Error("Enter a valid pair like AVAXUSDT");
+  $("status").textContent="Downloading "+s+" from Binance…"; setProg(0);
+  const b=await loadBars(s,$("tf").value,+$("period").value,setProg); setProg(null); return {s,b};
+}
+
+async function run(){
+  $("run").disabled=true;
+  try{
+    const {s,b}=await getData();
+    const key=$("strat").value, st=STRATS[key], p={}; st.params.forEach(([k,,d])=>p[k]=+($("p_"+k)?.value??d));
+    const o=opts(); const sig=st.fn(b,p); const r=backtest(b,sig,o); const S=stats(r.trades,b);
+    try{localStorage.setItem("realodds",JSON.stringify(Object.fromEntries(["sym","tf","period","strat","mode","cur","stake","lev","fee","slip","fund"].map(k=>[k,$(k).value]))))}catch(e){}
+    last={s,b,r,S,o,name:st.name};
+    renderResults(); renderDW(); renderTrades();
+    $("status").textContent=`${(b.c.length-200).toLocaleString()} candles tested · ${new Date(b.t[200]).toISOString().slice(0,10)} to ${new Date(b.t[b.t.length-1]).toISOString().slice(0,10)}`;
+  }catch(e){$("status").textContent="Error: "+e.message; setProg(null)}
+  $("run").disabled=false;
+}
+
+function card(k,v,c=""){return `<div class="card"><div class="k">${k}</div><div class="v ${c}">${v}</div></div>`}
+function renderResults(){
+  const {S,b,s,o,name}=last; $("empty").classList.add("hidden"); $("resBody").classList.remove("hidden");
+  if(!S){$("verdict").className="verdict mid";$("verdict").textContent="No trades were triggered with these settings.";$("cards").innerHTML="";$("halves").innerHTML="";drawEq([]);return}
+  const both=S.h1>0&&S.h2>0;
+  const v=$("verdict");
+  if(S.net<=0){v.className="verdict bad";v.textContent=`Lost ${money(-S.net)} over ${S.n} trades after costs. This setup did not make money on this data.`}
+  else if(!both){v.className="verdict mid";v.textContent=`Made ${money(S.net)}, but only in one half of the period — treat it as likely luck, not an edge.`}
+  else if(S.exTop3<=0){v.className="verdict mid";v.textContent=`Made ${money(S.net)}, but without its 3 best trades it would have made ${money(S.exTop3)}. The result depends on a few lucky trades.`}
+  else {v.className="verdict good";v.textContent=`Made ${money(S.net)} and was positive in both halves. Still not a guarantee — test it forward before risking money.`}
+  $("cards").innerHTML=[card("Net profit/loss",money(S.net),cls(S.net)),card("Trades",S.n),card("Win rate",fmtN(S.win,1)+"%"),
+    card("Average win",money(S.avgW),"pos"),card("Average loss",money(S.avgL),"neg"),card("Profit factor",isFinite(S.pf)?fmtN(S.pf):"∞"),
+    card("Worst drawdown",money(S.dd),"neg"),card("Longest losing streak",S.maxRun+" trades"),card("Liquidations",S.liq,S.liq?"neg":""),
+    card("Costs paid",money(-S.costs),"neg"),card("Before costs",money(S.net+S.costs),cls(S.net+S.costs)),
+    card("Biggest single trade",money(S.best),cls(S.best)),card("Without best 3 trades",money(S.exTop3),cls(S.exTop3))].join("");
+  $("halves").innerHTML=card("First half",money(S.h1),cls(S.h1))+card("Second half",money(S.h2),cls(S.h2));
+  const bh=100*(b.c[b.c.length-1]/b.c[200]-1);
+  $("bh").textContent=`For comparison, ${s.replace("USDT","")} moved ${fmtN(bh,1)}% over the same period (buy and hold). ${o.lev}x leverage, ${money(o.stake)} per trade, ${name}.`;
+  let eq=0; drawEq(last.r.trades.map(t=>({t:t.exitT,y:(eq+=t.pnl)})));
+}
+function drawEq(pts){
+  const cv=$("eq"), dpr=window.devicePixelRatio||1, W=cv.clientWidth, H=cv.clientHeight; cv.width=W*dpr; cv.height=H*dpr;
+  const g=cv.getContext("2d"); g.scale(dpr,dpr); g.clearRect(0,0,W,H);
+  const css=getComputedStyle(document.documentElement), ink=css.getPropertyValue("--muted"), line=css.getPropertyValue("--line");
+  if(pts.length<2){g.fillStyle=ink;g.fillText("Not enough trades to chart",10,20);return}
+  const ys=pts.map(p=>p.y).concat([0]), mn=Math.min(...ys), mx=Math.max(...ys), pad=36;
+  const X=i=>pad+(W-pad-8)*i/(pts.length-1), Y=v=>8+(H-28)*(1-(v-mn)/((mx-mn)||1));
+  g.strokeStyle=line; g.lineWidth=1; g.beginPath(); g.moveTo(pad,Y(0)); g.lineTo(W-8,Y(0)); g.stroke();
+  g.fillStyle=ink; g.font="11px system-ui"; g.fillText(money(mx),2,Y(mx)+4); g.fillText(money(mn),2,Y(mn)); g.fillText("0",pad-12,Y(0)+4);
+  const end=pts[pts.length-1].y; g.strokeStyle=end>=0?css.getPropertyValue("--good"):css.getPropertyValue("--bad"); g.lineWidth=2; g.beginPath();
+  pts.forEach((p,i)=>i?g.lineTo(X(i),Y(p.y)):g.moveTo(X(i),Y(p.y))); g.stroke();
+  g.fillStyle=ink; g.fillText(new Date(pts[0].t).toISOString().slice(0,10),pad,H-4); const lab=new Date(pts[pts.length-1].t).toISOString().slice(0,10); g.fillText(lab,W-8-g.measureText(lab).width,H-4);
+}
+function renderDW(){
+  const {b,r}=last, D=periodStats(b,r.barPnl,"d"), Wk=periodStats(b,r.barPnl,"w");
+  const row=(n,x)=>`<tr><td>${n}</td><td>${x.count}</td><td class="${cls(x.avg)}">${money(x.avg)}</td><td class="${cls(x.median)}">${money(x.median)}</td><td>${fmtN(x.win,1)}%</td><td class="pos">${money(x.best)}</td><td class="neg">${money(x.worst)}</td><td>${x.maxRun}</td></tr>`;
+  $("dwBody").innerHTML=`<p class="muted">Profit/loss marked to market each candle, then grouped by UTC day and by week (Monday start). Days with no open trade count as zero.</p>
+  <div class="scroll"><table class="tbl"><tr><th>Period</th><th>Count</th><th>Average</th><th>Median</th><th>Winning</th><th>Best</th><th>Worst</th><th>Longest losing run</th></tr>${row("Daily",D)}${row("Weekly",Wk)}</table></div>
+  <h3>Last 12 weeks</h3><div class="scroll"><table class="tbl"><tr><th>Week starting</th><th>Profit/loss</th></tr>${Wk.keys.slice(-12).reverse().map((k,i)=>{const v=Wk.v[Wk.v.length-1-i];return `<tr><td>${k}</td><td class="${cls(v)}">${money(v)}</td></tr>`}).join("")}</table></div>`;
+}
+function renderTrades(){
+  const tr=last.r.trades, show=PRO?tr:tr.slice(-25);
+  $("tradeTbl").innerHTML=`<tr><th>Entry (UTC)</th><th>Side</th><th>Entry</th><th>Exit</th><th>Reason</th><th>Hours</th><th>Profit/loss</th></tr>`+
+    show.slice().reverse().map(t=>`<tr><td>${new Date(t.entryT).toISOString().slice(0,16).replace("T"," ")}</td><td>${t.side}</td><td>${+t.entry.toPrecision(6)}</td><td>${+t.exit.toPrecision(6)}</td><td>${t.why}</td><td>${fmtN(t.hours,0)}</td><td class="${cls(t.pnl)}">${money(t.pnl)}</td></tr>`).join("")+
+    (PRO?"":`<tr><td colspan="7" class="muted">Free edition shows the last 25 trades. Pro shows all trades and exports CSV.</td></tr>`);
+}
+function downloadCSV(){
+  if(!PRO||!last) return;
+  const h="entry_time_utc,exit_time_utc,side,entry,exit,exit_reason,hours,pnl,costs\n";
+  const body=last.r.trades.map(t=>[new Date(t.entryT).toISOString(),new Date(t.exitT).toISOString(),t.side,t.entry,t.exit,t.why,t.hours,t.pnl.toFixed(2),t.cost.toFixed(2)].join(",")).join("\n");
+  const a=document.createElement("a"); a.href=URL.createObjectURL(new Blob([h+body],{type:"text/csv"})); a.download=`realodds_${last.s}_${$("tf").value}.csv`; a.click();
+}
+
+async function runSearch(){
+  $("runSearch").disabled=true;
+  try{
+    const {s,b}=await getData(); const base=opts(), rows=[];
+    for(const [k,st] of Object.entries(STRATS)){
+      const p={}; st.params.forEach(([kk,,d])=>p[kk]=d); const sig=st.fn(b,p);
+      for(const mode of ["both","long","short"]){
+        const o={...base,mode,sl:st.stops[0],tp:st.stops[1],hold:st.stops[2]};
+        const S=stats(backtest(b,sig,o).trades,b); if(S) rows.push({name:st.name,mode,...S});
+      }
+    }
+    rows.sort((a,b)=>b.net-a.net);
+    const modeName={both:"Long + short",long:"Long only",short:"Short only"};
+    const pos=rows.filter(r=>r.net>0).length, cons=rows.filter(r=>r.h1>0&&r.h2>0).length;
+    $("searchTbl").innerHTML=`<tr><th>Strategy</th><th>Direction</th><th>Trades</th><th>Win %</th><th>Net</th><th>1st half</th><th>2nd half</th><th>Both halves +</th><th>Without best 3</th><th>Liq.</th></tr>`+
+      rows.map(r=>`<tr><td>${r.name}</td><td>${modeName[r.mode]}</td><td>${r.n}</td><td>${fmtN(r.win,1)}</td><td class="${cls(r.net)}">${money(r.net)}</td><td class="${cls(r.h1)}">${money(r.h1)}</td><td class="${cls(r.h2)}">${money(r.h2)}</td><td>${r.h1>0&&r.h2>0?"yes":"no"}</td><td class="${cls(r.exTop3)}">${money(r.exTop3)}</td><td>${r.liq}</td></tr>`).join("")+
+      `<tr><td colspan="10" class="muted">${rows.length} tests on ${s}: ${pos} profitable overall, ${cons} positive in both halves, ${rows.filter(r=>r.h1>0&&r.h2>0&&r.exTop3>0).length} still positive without their 3 best trades. The top row is the best in hindsight, not a prediction.</td></tr>`;
+    $("status").textContent="Strategy search complete.";
+  }catch(e){$("status").textContent="Error: "+e.message; setProg(null)}
+  $("runSearch").disabled=false;
+}
+
+async function runOdds(){
+  $("runOdds").disabled=true;
+  try{
+    const {s,b}=await getData(); const o=opts();
+    const goal=+$("oGoal").value, stake=+$("oStake").value, risk=+$("oRisk").value, hz=Math.max(1,Math.round(+$("oHz").value/o.hpb));
+    const rows=[];
+    for(const lev of [1,2,3,5,10,20,50]){
+      const need=(goal/stake)/lev+2*(o.fee+o.slip), liq=1/lev-0.005, stop=risk>0?Math.min((risk/stake)/lev,liq):liq, lossAmt=risk>0&&risk/stake/lev<liq?risk:stake;
+      let w=0,l=0,nn=0;
+      for(const sd of [1,-1]) for(let e=200;e<b.c.length-hz;e++){
+        const px=b.o[e], tgt=px*(1+sd*need), st=px*(1-sd*stop); let res=0;
+        for(let j=e;j<e+hz;j++){
+          const adv=sd>0?b.l[j]:b.h[j], fav=sd>0?b.h[j]:b.l[j];
+          if(sd>0?adv<=st:adv>=st){res=-1;break} if(sd>0?fav>=tgt:fav<=tgt){res=1;break}
+        }
+        res>0?w++:res<0?l++:nn++;
+      }
+      const t=w+l+nn, ev=(w*goal-l*lossAmt)/t;
+      rows.push({lev,need:100*need,w:100*w/t,l:100*l/t,nn:100*nn/t,ev,lossAmt});
+    }
+    $("oddsTbl").innerHTML=`<tr><th>Leverage</th><th>Price move needed</th><th>Reached goal</th><th>Hit stop / liquidated</th><th>Neither</th><th>Average result per try*</th></tr>`+
+      rows.map(r=>`<tr><td>${r.lev}x</td><td>${fmtN(r.need,2)}%</td><td>${fmtN(r.w,1)}%</td><td>${fmtN(r.l,1)}% (−${money(r.lossAmt).replace("-","")})</td><td>${fmtN(r.nn,1)}%</td><td class="${cls(r.ev)}">${money(r.ev)}</td></tr>`).join("");
+    $("oddsNote").textContent=`* Wins count +${money(goal)}, stops/liquidations count the loss; tries that hit neither count as 0 (in reality they end with a small gain or loss). If stop and goal are touched in the same candle it counts as a loss. Based on ${s} ${$("tf").value} data.`;
+    $("status").textContent="Odds calculated.";
+  }catch(e){$("status").textContent="Error: "+e.message; setProg(null)}
+  $("runOdds").disabled=false;
+}
+initUI();
+window.addEventListener("resize",()=>last&&last.S&&renderResults());
+</script>
+</body>
+</html>
